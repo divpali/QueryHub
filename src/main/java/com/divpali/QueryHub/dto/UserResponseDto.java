@@ -1,4 +1,4 @@
-package com.divpali.QueryHub;
+package com.divpali.QueryHub.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
