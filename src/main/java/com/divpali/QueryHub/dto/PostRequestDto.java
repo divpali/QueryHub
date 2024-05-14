@@ -1,5 +1,6 @@
 package com.divpali.QueryHub.dto;
 
+import com.divpali.QueryHub.entities.Vote;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.AllArgsConstructor;
@@ -21,4 +22,13 @@ public class PostRequestDto {
     private Long userId;
 
     private Set<String> tagNames;
+
+    /*private Long postId;
+    private String postContent;
+    private Timestamp postCreatedTime;
+    private Long postUserId;
+    private String postUsername;
+    private Set<String> tagNames;
+    private Set<AnswerResponseDto> answers;
+    private Set<Vote> votes;*/
 }

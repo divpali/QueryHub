@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 public class AnswerRequestDto {
 
+    private Long userId;
     private String answerContent;
     private Timestamp answerCreatedTime;
     private Long parentAnswerId;

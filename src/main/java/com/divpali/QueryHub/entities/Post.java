@@ -40,4 +40,8 @@ public class Post {
     //OneToMany relationship with Answer - each post can have multiple answers
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private Set<Answer> answers = new HashSet<>();
+
+    //OneToMany relationship with Answer - each post can have multiple votes
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private Set<Vote> votes = new HashSet<>();
 }

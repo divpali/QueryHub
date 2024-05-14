@@ -5,4 +5,8 @@ import com.divpali.QueryHub.entities.Answer;
 public interface AnswerService {
 
     public Answer save(Answer answer);
+
+    public Answer saveAndFlush(Answer answer);
+
+    public Answer getAnswerById(Long parentAnswerId);
 }

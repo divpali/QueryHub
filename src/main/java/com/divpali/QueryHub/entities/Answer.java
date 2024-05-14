@@ -21,7 +21,7 @@ public class Answer {
 
     private String content;
 
-    private Timestamp commentCreatedTime;
+    private Timestamp answerCreatedTime;
 
     // ManyToOne relationship with Post - multiple answers can belong to the same post.
     @ManyToOne
@@ -41,6 +41,5 @@ public class Answer {
     @ManyToOne
     @JoinColumn(name = "parent_answer_id")
     private Answer parentAnswer;
-
 
 }

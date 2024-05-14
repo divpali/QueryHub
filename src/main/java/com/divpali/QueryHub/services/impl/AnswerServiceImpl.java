@@ -16,4 +16,15 @@ public class AnswerServiceImpl implements AnswerService {
     public Answer save(Answer answer) {
         return answerRepository.save(answer);
     }
+
+    @Override
+    public Answer saveAndFlush(Answer answer) {
+        return answerRepository.saveAndFlush(answer);
+    }
+
+    @Override
+    public Answer getAnswerById(Long parentAnswerId) {
+        return answerRepository.findById(parentAnswerId)
+                .orElseThrow(() -> new RuntimeException("Parent answer not found with id: " + parentAnswerId));
+    }
 }

@@ -1,21 +1,24 @@
 package com.divpali.QueryHub.services.impl;
 
+import com.divpali.QueryHub.VoteType;
 import com.divpali.QueryHub.dto.PostRequestDto;
 import com.divpali.QueryHub.dto.PostResponseDto;
 import com.divpali.QueryHub.entities.Post;
 import com.divpali.QueryHub.entities.Tag;
 import com.divpali.QueryHub.entities.User;
+import com.divpali.QueryHub.entities.Vote;
 import com.divpali.QueryHub.repository.PostRepository;
 import com.divpali.QueryHub.repository.TagRepository;
+import com.divpali.QueryHub.repository.UserRepository;
+import com.divpali.QueryHub.repository.VoteRepository;
 import com.divpali.QueryHub.services.PostService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -26,13 +29,22 @@ public class PostServiceImpl implements PostService {
     @Autowired
     TagRepository tagRepository;
 
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    VoteRepository voteRepository;
+
     @Override
     public PostResponseDto createPost(User user, PostRequestDto postRequestDto) {
 
         ModelMapper modelMapper = new ModelMapper();
 
-        Post post = modelMapper.map(postRequestDto, Post.class);
+        //create Post
+        Post post = new Post();
+        post.setContent(postRequestDto.getContent());
         post.setPostCreatedTime(new Timestamp(System.currentTimeMillis()));
+        post.setUser(user);
 
 
         /*
@@ -62,23 +74,90 @@ public class PostServiceImpl implements PostService {
         }
 
         post.setTags(tagsOnPostRequest);
+        Post savedPost = postRepository.save(post);
 
-        PostResponseDto postResponseDto = modelMapper.map(postRepository.save(post), PostResponseDto.class);
+        PostResponseDto postResponseDto = modelMapper.map(savedPost, PostResponseDto.class);
         postResponseDto.setTagNames(tagNames);
         postResponseDto.setPostUserId(user.getId());
         postResponseDto.setPostUsername(user.getUsername());
+        postResponseDto.setPostContent(postRequestDto.getContent());
 
         return postResponseDto;
     }
 
     @Override
-    public Post getPostById(Long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
+    public Optional<Post> getPostById(Long postId) {
+        return postRepository.findById(postId);
     }
 
     @Override
     public Post save(Post post) {
         return postRepository.save(post);
     }
+
+    public List<Post> searchPostsByTagNames(List<String> tagNames) {
+
+        List<Post> posts = new ArrayList<>();
+        for (String tagName : tagNames) {
+            posts.add(postRepository.findByTagsName(tagName));
+        }
+        return posts;
+    }
+
+    @Transactional  //making entire operation of voting a post atomic
+    @Override
+    public void votePost(Long postId, Long userId, int voteType) {
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new NoSuchElementException("Post not found with ID: " + postId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
+
+        if (post.getVotes().stream().anyMatch(vote -> vote.getUser().equals(user))) {
+            throw new IllegalArgumentException("User has already upvoted this post");
+        }
+
+
+        //create the vote --> voteType = 0 - upVote, voteType = -1 - downVote
+
+        Vote vote = new Vote();
+        vote.setPost(post);
+        vote.setUser(user);
+        if(voteType == 0) {
+            vote.setVoteType(VoteType.UPVOTE);
+        } else {
+            vote.setVoteType(VoteType.DOWNVOTE);
+        }
+
+        voteRepository.save(vote);
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

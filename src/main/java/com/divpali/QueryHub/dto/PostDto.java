@@ -1,6 +1,5 @@
 package com.divpali.QueryHub.dto;
 
-import com.divpali.QueryHub.entities.Tag;
 import com.divpali.QueryHub.entities.Vote;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +13,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostResponseDto {
+public class PostDto {
 
     private Long postId;
     private String postContent;
@@ -23,5 +22,4 @@ public class PostResponseDto {
     private String postUsername;
     private Set<String> tagNames;
     private Set<AnswerResponseDto> answers;
-    private Set<Vote> votes;
 }
