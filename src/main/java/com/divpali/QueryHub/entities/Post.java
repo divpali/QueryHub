@@ -39,9 +39,16 @@ public class Post {
 
     //OneToMany relationship with Answer - each post can have multiple answers
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("post")
     private Set<Answer> answers = new HashSet<>();
 
     //OneToMany relationship with Answer - each post can have multiple votes
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("post")
     private Set<Vote> votes = new HashSet<>();
+
+    // store upVote and downVote count to denormalize the filed
+//    private int upvoteCount;
+//    private int downvoteCount;
+
 }

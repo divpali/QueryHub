@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -37,8 +38,6 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostResponseDto createPost(User user, PostRequestDto postRequestDto) {
-
-        ModelMapper modelMapper = new ModelMapper();
 
         //create Post
         Post post = new Post();
@@ -67,8 +66,8 @@ public class PostServiceImpl implements PostService {
                     tag = new Tag();    // create new tag - haven't put any specific conditions yet to set new tags
                     tag.setName(tagName);
                     tag = tagRepository.save(tag);
-                    tagNames.add(tagName);
                 }
+                tagNames.add(tagName);
                 tagsOnPostRequest.add(tag);
             }
         }
@@ -76,6 +75,7 @@ public class PostServiceImpl implements PostService {
         post.setTags(tagsOnPostRequest);
         Post savedPost = postRepository.save(post);
 
+        ModelMapper modelMapper = new ModelMapper();
         PostResponseDto postResponseDto = modelMapper.map(savedPost, PostResponseDto.class);
         postResponseDto.setTagNames(tagNames);
         postResponseDto.setPostUserId(user.getId());
@@ -91,17 +91,28 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public List<Post> getPostByUserId(Long userId) {
+        return postRepository.findByUserId(userId);
+    }
+
+    @Override
     public Post save(Post post) {
         return postRepository.save(post);
     }
 
     public List<Post> searchPostsByTagNames(List<String> tagNames) {
 
-        List<Post> posts = new ArrayList<>();
+        List<Post> total_posts = new ArrayList<>();
         for (String tagName : tagNames) {
-            posts.add(postRepository.findByTagsName(tagName));
+            List<Post> posts = postRepository.findByTagsName(tagName);
+            total_posts.addAll(posts);
         }
-        return posts;
+        return total_posts;
+    }
+
+    @Override
+    public Set<Post> searchPostsByTagName(String tagName) {
+        return postRepository.findByTagsName(tagName).stream().collect(Collectors.toSet());
     }
 
     @Transactional  //making entire operation of voting a post atomic
@@ -132,6 +143,12 @@ public class PostServiceImpl implements PostService {
 
         voteRepository.save(vote);
     }
+
+    @Override
+    public List<Post> getAllPosts() {
+        return postRepository.findAll();
+    }
+
 }
 
 

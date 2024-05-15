@@ -22,15 +22,32 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	compileOnly 'org.projectlombok:lombok'
+
+	//DB
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	//oracle-connector-java
 	runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+	//h2-connector-java
 	runtimeOnly 'com.h2database:h2'
+	//mysql-connector-java
+	implementation 'mysql:mysql-connector-java:8.0.33'
+
 	implementation 'org.modelmapper:modelmapper:3.2.0'
+
+	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	//JWT
+//	implementation 'com.auth0:java-jwt:4.4.0'
+//	implementation 'org.springframework.security:spring-security-web:6.2.4'
+//	implementation 'org.springframework.security:spring-security-core:6.2.4'
+//	implementation 'org.springframework.security:spring-security-config:6.2.4'
+//	implementation 'org.springframework.boot:spring-boot-starter-security:3.2.5'
+
 }
 
 tasks.named('test') {

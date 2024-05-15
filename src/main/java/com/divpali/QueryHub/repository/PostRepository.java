@@ -9,5 +9,7 @@ import java.util.List;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    Post findByTagsName(String tagName);
+    List<Post> findByTagsName(String tagName);
+
+    List<Post> findByUserId(Long userId);
 }

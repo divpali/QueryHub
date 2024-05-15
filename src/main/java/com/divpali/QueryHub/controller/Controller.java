@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/query-hub")
@@ -65,9 +66,10 @@ public class Controller {
     }
 
 
-    @PostMapping("/api/posts/{userId}")
+    @PostMapping("/api/posts/userId/{userId}")
     public ResponseEntity<?> createPost(@PathVariable Long userId, @RequestBody PostRequestDto postRequestDto) {
 
+        //here the request has tags option
         Optional<User> optionalUser = userService.getUserById(userId);
         if (optionalUser.isPresent()) {
             PostResponseDto postResponseDto = postService.createPost(optionalUser.get(), postRequestDto);
@@ -77,6 +79,29 @@ public class Controller {
                     .body("User not found with ID: " + userId);
         }
 
+    }
+
+    @GetMapping("/api/posts")
+    public ResponseEntity<?> getAllPosts() {
+        List<Post> posts = postService.getAllPosts();
+        List<PostResponseDto> postResponseDtos = new ArrayList<>();
+
+        for (Post post : posts) {
+            PostResponseDto postResponseDto = new PostResponseDto();
+            postResponseDto.setPostId(post.getId());
+            postResponseDto.setPostContent(post.getContent());
+            postResponseDto.setPostCreatedTime(post.getPostCreatedTime());
+            postResponseDto.setPostUserId(post.getUser().getId());
+            postResponseDto.setPostUsername(post.getUser().getUsername());
+            postResponseDto.setTagNames(post.getTags().stream().map(Tag::getName).collect(Collectors.toSet()));
+            // Assuming answers and votes are already populated in the Post entity
+            postResponseDto.setAnswers(post.getAnswers().stream().map(this::mapToAnswerResponseDto).collect(Collectors.toSet()));
+            postResponseDto.setVotes(post.getVotes());
+
+            postResponseDtos.add(postResponseDto);
+        }
+
+        return ResponseEntity.ok(postResponseDtos);
     }
 
     @GetMapping("/api/posts/{postId}")
@@ -121,9 +146,62 @@ public class Controller {
 
     }
 
+    @GetMapping("/api/posts/userId/{userId}")
+    public ResponseEntity<?> getPostByUserId(@PathVariable Long userId) {
+        List<Post> posts = postService.getPostByUserId(userId);
+
+        List<PostResponseDto> postResponseDtos = new ArrayList<>();
+
+        for (Post post : posts) {
+            PostResponseDto postResponseDto = new PostResponseDto();
+            postResponseDto.setPostId(post.getId());
+            postResponseDto.setPostContent(post.getContent());
+            postResponseDto.setPostCreatedTime(post.getPostCreatedTime());
+            postResponseDto.setPostUserId(userId);
+            postResponseDto.setPostUsername(post.getContent());
+            postResponseDto.setTagNames(post.getTags().stream().map(Tag::getName).collect(Collectors.toSet()));
+            postResponseDto.setAnswers(post.getAnswers().stream().map(this::mapToAnswerResponseDto).collect(Collectors.toSet()));
+            postResponseDto.setVotes(post.getVotes());
+
+            postResponseDtos.add(postResponseDto);
+        }
+
+        return ResponseEntity.ok(postResponseDtos);
+
+    }
+
+    @GetMapping("/api/search/tags")
+    public ResponseEntity<?> searchPostsByTags(@RequestBody List<String> tagNames) {
+        List<Post> posts = postService.searchPostsByTagNames(tagNames);
+        return ResponseEntity.ok(posts);
+    }
+
+    @GetMapping("/api/search/tag")
+    public ResponseEntity<?> searchPostsByTag(@RequestParam String tagName) {
+        Set<Post> posts = postService.searchPostsByTagName(tagName);
+
+        List<PostResponseDto> postResponseDtos = new ArrayList<>();
+
+        for (Post post : posts) {
+            PostResponseDto postResponseDto = new PostResponseDto();
+            postResponseDto.setPostId(post.getId());
+            postResponseDto.setPostContent(post.getContent());
+            postResponseDto.setPostCreatedTime(post.getPostCreatedTime());
+            postResponseDto.setPostUserId(post.getUser().getId());
+            postResponseDto.setPostUsername(post.getUser().getUsername());
+            postResponseDto.setTagNames(post.getTags().stream().map(Tag::getName).collect(Collectors.toSet()));
+            // Assuming answers and votes are already populated in the Post entity
+            postResponseDto.setAnswers(post.getAnswers().stream().map(this::mapToAnswerResponseDto).collect(Collectors.toSet()));
+            postResponseDto.setVotes(post.getVotes());
+
+            postResponseDtos.add(postResponseDto);
+        }
+        return ResponseEntity.ok(postResponseDtos);
+    }
+
 
     //users can only comment after they registered
-    @PostMapping("/api/answers/{postId}/{userId}")
+    @PostMapping("/api/answers/postId/{postId}/userId/{userId}")
     public ResponseEntity<?> addAnswersToPost(@PathVariable Long postId, @PathVariable Long userId,
                                                @RequestBody AnswerRequestDto answerRequestDto) {
 
@@ -194,7 +272,7 @@ public class Controller {
     }
 
 
-    @PostMapping("/api/nestedAnswers/{parentId}/{userId}")
+    @PostMapping("/api/nestedAnswers/parentAnswerId/{parentId}/userId/{userId}")
     public ResponseEntity<?> addNestedAnswer(@PathVariable Long parentId, @PathVariable Long userId,
                                              @RequestBody AnswerRequestDto answerRequestDto) {
 
@@ -259,13 +337,7 @@ public class Controller {
         return answerDto;
     }
 
-    @GetMapping("/api/search/tags")
-    public ResponseEntity<?> searchPostsByTags(@RequestBody List<String> tagNames) {
-        List<Post> posts = postService.searchPostsByTagNames(tagNames);
-        return ResponseEntity.ok(posts);
-    }
-
-    @PostMapping("/api/post/vote/{userId}/{postId}/{voteType}")
+    @PostMapping("/api/post/vote/userId/{userId}/postId/{postId}/voteType/{voteType}")
     public ResponseEntity<?> addVoteToPost(@PathVariable Long userId, @PathVariable Long postId, @PathVariable int voteType) {
         try {
             postService.votePost(postId, userId, voteType);

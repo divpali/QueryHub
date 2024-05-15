@@ -8,6 +8,7 @@ import com.divpali.QueryHub.services.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -37,4 +38,5 @@ public class UserServiceImpl implements UserService {
     public User save(User user) {
         return userRepository.save(user);
     }
+
 }
